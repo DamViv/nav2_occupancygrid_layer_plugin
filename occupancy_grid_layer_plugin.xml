@@ -1,0 +1,10 @@
+<library path="libnav2_occupancygrid_layer_plugin">
+  <class
+    name="nav2_occupancygrid_layer_plugin::OccupancyGridLayer"
+    type="nav2_occupancygrid_layer_plugin::OccupancyGridLayer"
+    base_class_type="nav2_costmap_2d::Layer">
+    <description>
+      Costmap layer consuming OccupancyGrid messages and mapping values [0-255].
+    </description>
+  </class>
+</library>
