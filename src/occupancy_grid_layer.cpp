@@ -18,6 +18,10 @@ void OccupancyGridLayer::onInitialize()
     throw std::runtime_error("Failed to lock node in OccupancyGridLayer");
   }
 
+  // init TF buffer + listener
+  tf_buffer_ = std::make_shared<tf2_ros::Buffer>(node->get_clock());
+  tf_listener_ = std::make_shared<tf2_ros::TransformListener>(*tf_buffer_, node, true);
+
   current_ = true;
 
   std::string topic = node->declare_parameter<std::string>(
@@ -147,23 +151,47 @@ void OccupancyGridLayer::updateCosts(
     nav2_costmap_2d::Costmap2D & master_grid,
     int min_i, int min_j, int max_i, int max_j)
 {
-  std::lock_guard<std::mutex> lock(mutex_);
-  if (!has_map_) return;
+    std::lock_guard<std::mutex> lock(mutex_);
+    if (!has_map_) return;
 
+    // Propriétés, Origine et rotation de la grille occupancy
+    const double res = last_map_.info.resolution;
+    const unsigned int width = last_map_.info.width;
+    const unsigned int height = last_map_.info.height;
 
-  // Propriétés, Origine et rotation de la grille occupancy
-  const double res = last_map_.info.resolution;
-  const unsigned int width = last_map_.info.width;
-  const unsigned int height = last_map_.info.height;
-  double ox = last_map_.info.origin.position.x;
-  double oy = last_map_.info.origin.position.y;
-  tf2::Quaternion q(
-      last_map_.info.origin.orientation.x,
-      last_map_.info.origin.orientation.y,
-      last_map_.info.origin.orientation.z,
-      last_map_.info.origin.orientation.w);
-  double roll, pitch, yaw;
-  tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    double ox, oy, roll, pitch, yaw;
+    //   if(last_map_.header.frame_id == "map"){            
+      ox = last_map_.info.origin.position.x;
+      oy = last_map_.info.origin.position.y;
+      tf2::Quaternion q(
+          last_map_.info.origin.orientation.x,
+          last_map_.info.origin.orientation.y,
+          last_map_.info.origin.orientation.z,
+          last_map_.info.origin.orientation.w);
+      tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    // } else {
+    //   // build PoseStamped properly and use tf_buffer_->transform(...)
+    //   geometry_msgs::msg::PoseStamped origin_in;
+    //   origin_in.header = last_map_.header;
+    //   origin_in.pose.position = last_map_.info.origin.position;
+    //   origin_in.pose.orientation = last_map_.info.origin.orientation;
+
+    //   geometry_msgs::msg::PoseStamped origin_world;
+    //   try {
+    //     origin_world = tf_buffer_->transform(origin_in, std::string("map"), tf2::durationFromSec(0.2));
+    //     ox = origin_world.pose.position.x;
+    //     oy = origin_world.pose.position.y;
+    //     tf2::Quaternion q(
+    //         origin_world.pose.orientation.x,
+    //         origin_world.pose.orientation.y,
+    //         origin_world.pose.orientation.z,
+    //         origin_world.pose.orientation.w);
+    //     tf2::Matrix3x3(q).getRPY(roll, pitch, yaw);
+    //   } catch (const tf2::TransformException &ex) {
+    //     RCLCPP_WARN(rclcpp::get_logger("OccupancyGridLayer"), "Could not transform occupancy grid origin to map frame: %s", ex.what());
+    //     return;
+    //   }
+    // }
 
 
 

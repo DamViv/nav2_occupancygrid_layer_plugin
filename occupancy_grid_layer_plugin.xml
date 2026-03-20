@@ -1,4 +1,4 @@
-<library path="libnav2_occupancygrid_layer_plugin">
+<library path="nav2_occupancygrid_layer_plugin">
   <class
     name="nav2_occupancygrid_layer_plugin::OccupancyGridLayer"
     type="nav2_occupancygrid_layer_plugin::OccupancyGridLayer"

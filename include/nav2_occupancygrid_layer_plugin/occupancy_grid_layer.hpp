@@ -9,6 +9,9 @@
 #include <nav2_costmap_2d/layered_costmap.hpp>
 #include "nav2_costmap_2d/footprint.hpp"
 
+#include <geometry_msgs/msg/pose_stamped.hpp>
+#include <tf2_ros/buffer.h>
+#include <tf2_ros/transform_listener.h>
 
 namespace nav2_occupancygrid_layer_plugin
 {
@@ -41,6 +44,9 @@ private:
   std::mutex mutex_;
   bool has_map_;
   bool footprint_clearing_enabled_;
+
+  std::shared_ptr<tf2_ros::Buffer> tf_buffer_;
+  std::shared_ptr<tf2_ros::TransformListener> tf_listener_;
 
 };
 
